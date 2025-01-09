@@ -7,11 +7,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useTask } from "@/contexts/task-organizerly";
+import { Task } from "@/interfaces";
 import { CreateTaskSchema } from "@/schemas/create-task-schema";
 import { CreateTaskSchemaType } from "@/types";
 import { toastInformation } from "@/utils/toast-information";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "./ui/button";
@@ -26,49 +27,56 @@ import {
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 
-export function CreateTask() {
-  const { createTask } = useTask();
+interface UpdateTaskProps {
+  task: Task;
+}
+
+export function UpdateTask({ task }: UpdateTaskProps) {
+  const { updateTask } = useTask();
   const [openDialog, setOpenDialog] = useState(false);
+
   const form = useForm<CreateTaskSchemaType>({
     resolver: zodResolver(CreateTaskSchema),
     defaultValues: {
-      title: "",
-      description: "",
+      title: task.title,
+      description: task.description,
     },
   });
 
-  function handleCreateTaskSubmit(data: CreateTaskSchemaType) {
-    createTask(data.title, data.description);
+  function handleUpdateTaskSubmit(data: CreateTaskSchemaType) {
+    updateTask(task.id, data.title, data.description);
     handleOpenDialog(false);
     toastInformation(
-      "✅ Tarefa criada com sucesso!",
-      'Sua nova tarefa foi criada, Você pode vê lá na aba "Pendentes".'
+      "✅ Tarefa atualizada com sucesso!",
+      "Sua nova tarefa foi atualizada."
     );
   }
 
   function handleOpenDialog(open: boolean) {
     setOpenDialog(open);
-    form.reset();
+    form.reset({
+      title: task.title,
+      description: task.description,
+    });
   }
 
   return (
     <Dialog open={openDialog} onOpenChange={handleOpenDialog}>
       <DialogTrigger asChild>
-        <Button variant="secondary">
-          <Plus />
-          Adicionar Novo
+        <Button size="icon" className="size-7 bg-blue-600 hover:bg-blue-500">
+          <Edit />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(handleCreateTaskSubmit)}
+            onSubmit={form.handleSubmit(handleUpdateTaskSubmit)}
             className="space-y-6"
           >
             <DialogHeader>
-              <DialogTitle>Crie uma uma nova tarefa</DialogTitle>
+              <DialogTitle>Atualize a tarefa</DialogTitle>
               <DialogDescription>
-                Preencha os campos abaixo para criar sua tarefa.
+                Preencha os campos abaixo para atualizar sua tarefa.
               </DialogDescription>
             </DialogHeader>
             <FormField
@@ -103,7 +111,7 @@ export function CreateTask() {
                 </FormItem>
               )}
             />
-            <Button type="submit"> Criar Tarefa</Button>
+            <Button type="submit">Atualizar Tarefa</Button>
           </form>
         </Form>
       </DialogContent>
